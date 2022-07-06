@@ -28,11 +28,10 @@ const favoriteBlog = (blogs) => {
 
 const mostBlogs = (blogs) => {
     const lodash = require('lodash')
-    // Create a list of unique authors using Lodash
-    // const authors = lodash.uniq(blogs.map((blog) => blog.author))
     let maxBlogs = 0
     let maxAuthor = ''
 
+    // Create a list of authors and their number of occurrences using Lodash
     let authors = lodash.countBy(blogs, 'author')
     console.log('authors:', authors)
 
@@ -50,9 +49,44 @@ const mostBlogs = (blogs) => {
     }
 }
 
+const mostLikes = (blogs) => {
+    const lodash = require('lodash')
+    // Create a list of unique authors using Lodash
+    const authors = lodash.uniq(blogs.map((blog) => blog.author))
+    console.log('authors:', authors)
+
+    let maxAuthor = ''
+    let maxLikes = 0
+
+    // For each author, sum the total likes of their blogs
+    authors.forEach((author) => {
+        // Create a list of blogs for the current author
+        const blogsForAuthor = blogs.filter((blog) => blog.author === author)
+        console.log('blogsForAuthor:', blogsForAuthor)
+
+        let authorLikes = 0
+        blogsForAuthor.forEach((blog) => {
+            authorLikes += blog.likes
+        })
+
+        // Check if the current author has more likes than the previous author
+        if (authorLikes > maxLikes) {
+            maxLikes = authorLikes
+            maxAuthor = author
+        }
+    })
+
+    console.log('mostLikes:', maxAuthor, ',', maxLikes)
+    return {
+        author: maxAuthor,
+        likes: maxLikes,
+    }
+}
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
     mostBlogs,
+    mostLikes,
 }
