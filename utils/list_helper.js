@@ -4,7 +4,7 @@ const dummy = (blogs) => {
 }
 
 const totalLikes = (blogs) => {
-    var total = 0
+    let total = 0
     blogs.forEach((blog) => {
         total += blog.likes
     })
@@ -12,8 +12,8 @@ const totalLikes = (blogs) => {
 }
 
 const favoriteBlog = (blogs) => {
-    var max = 0
-    var maxBlog = blogs[0]
+    let max = 0
+    let maxBlog = blogs[0]
     blogs.forEach((blog) => {
         if (blog.likes > max) {
             max = blog.likes
@@ -26,8 +26,33 @@ const favoriteBlog = (blogs) => {
     return maxBlog
 }
 
+const mostBlogs = (blogs) => {
+    const lodash = require('lodash')
+    // Create a list of unique authors using Lodash
+    // const authors = lodash.uniq(blogs.map((blog) => blog.author))
+    let maxBlogs = 0
+    let maxAuthor = ''
+
+    let authors = lodash.countBy(blogs, 'author')
+    console.log('authors:', authors)
+
+    for (let author in authors) {
+        if (authors[author] > maxBlogs) {
+            maxBlogs = authors[author]
+            maxAuthor = author
+        }
+    }
+
+    console.log('mostBlogs:', maxAuthor, ',', maxBlogs)
+    return {
+        author: maxAuthor,
+        blogs: maxBlogs,
+    }
+}
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
+    mostBlogs,
 }
