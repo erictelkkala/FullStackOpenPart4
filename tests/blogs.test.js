@@ -42,6 +42,26 @@ describe('blogs', () => {
         expect(response.body[0]._id).toBeDefined()
     })
 
+    test('A new blog can be added to the database', async () => {
+        const newBlog = {
+            title: 'String3',
+            author: 'Author3',
+            url: 'www.String3.com',
+            likes: 123,
+        }
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const response = await api.get('/api/blogs')
+        const lastBlog = response.body[response.body.length - 1]
+        // Remove the properties that we cannot test
+        delete lastBlog._id && delete lastBlog.__v
+        expect(lastBlog).toEqual(newBlog)
+    })
+
     afterAll(() => {
         mongoose.connection.close()
     })
