@@ -62,6 +62,25 @@ describe('blogs', () => {
         expect(lastBlog).toEqual(newBlog)
     })
 
+    test('If a new blog has no likes, it will default to zero likes', async () => {
+        const newBlog = {
+            title: 'String3',
+            author: 'Author3',
+            url: 'www.String3.com',
+        }
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const response = await api.get('/api/blogs')
+        const lastBlog = response.body[response.body.length - 1]
+        // Remove the properties that we cannot test
+        delete lastBlog._id && delete lastBlog.__v
+        expect(lastBlog.likes).toBe(0)
+    })
+
     afterAll(() => {
         mongoose.connection.close()
     })
