@@ -37,6 +37,11 @@ describe('blogs', () => {
         expect(response.body.length).toBe(initialBlogs.length)
     })
 
+    test('The ID field exists and is named _id', async () => {
+        const response = await api.get('/api/blogs')
+        expect(response.body[0]._id).toBeDefined()
+    })
+
     afterAll(() => {
         mongoose.connection.close()
     })
