@@ -81,6 +81,14 @@ describe('blogs', () => {
         expect(lastBlog.likes).toBe(0)
     })
 
+    test('If a new blog has no title or url, it will return status code 400', async () => {
+        const newBlog = {
+            author: 'Author3',
+            likes: 123,
+        }
+        await api.post('/api/blogs').send(newBlog).expect(400)
+    })
+
     afterAll(() => {
         mongoose.connection.close()
     })
