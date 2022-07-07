@@ -89,6 +89,31 @@ describe('blogs', () => {
         await api.post('/api/blogs').send(newBlog).expect(400)
     })
 
+    test('A blog can be deleted', async () => {
+        // Get all of the blogs and delete the first one
+        const blogsAtStart = await api.get('/api/blogs')
+        const blogToDelete = blogsAtStart.body[0]
+        await api.delete(`/api/blogs/${blogToDelete._id}`).expect(204)
+        // Get all of the blogs and check if the first one is gone
+        const blogsAtEnd = await api.get('/api/blogs')
+        expect(blogsAtEnd.body.length).toBe(blogsAtStart.body.length - 1)
+    })
+
+    test('A blog can be updated', async () => {
+        // Get all of the blogs and update the first one
+        const blogsAtStart = await api.get('/api/blogs')
+        const blogToUpdate = blogsAtStart.body[0]
+
+        blogToUpdate.likes = blogToUpdate.likes + 10
+        await api
+            .put(`/api/blogs/${blogToUpdate._id}`)
+            .send(blogToUpdate)
+            .expect(200)
+        // Get all of the blogs and check if the first one has been updated
+        const blogsAtEnd = await api.get('/api/blogs')
+        expect(blogsAtEnd.body[0].likes).toBe(blogToUpdate.likes)
+    })
+
     afterAll(() => {
         mongoose.connection.close()
     })
