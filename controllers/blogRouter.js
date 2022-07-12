@@ -1,9 +1,10 @@
 const Blog = require('../models/blogSchema')
 const blogRouter = require('express').Router()
+const User = require('../models/userSchema')
 
 // Get every blog from the database
 blogRouter.get('/', async (request, response) => {
-    const blogs = await Blog.find({})
+    const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
     if (blogs) {
         response.json(blogs)
     } else {
@@ -13,7 +14,11 @@ blogRouter.get('/', async (request, response) => {
 
 // Add a new blog to the database
 blogRouter.post('/', async (request, response) => {
-    const blog = new Blog(request.body)
+    const blog = request.body
+    console.log(blog.userID)
+
+    const user = await User.findById(blog.userID)
+    console.log(user)
     // If the likes property is not defined, set it to 0
     if (blog.likes === undefined) {
         blog.likes = 0
@@ -22,8 +27,18 @@ blogRouter.post('/', async (request, response) => {
         response.status(400).end()
     }
 
-    const result = await blog.save()
+    const newBlog = new Blog({
+        title: blog.title,
+        author: blog.author,
+        url: blog.url,
+        likes: blog.likes,
+        user: user.id,
+    })
+
+    const result = await newBlog.save()
     if (result) {
+        user.blogs = user.blogs.concat(result.id)
+        await user.save()
         response.status(201).json(result)
     } else {
         response.status(400).end()

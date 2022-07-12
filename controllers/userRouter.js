@@ -5,14 +5,18 @@ const bcrypt = require('bcrypt')
 userRouter.post('/', async (request, response) => {
     const { username, name, password } = request.body
 
-    if (!username || !name || !password) {
+    if (!username || !password) {
         return response
             .status(400)
-            .json({ error: 'Missing username, name or password' })
+            .json({ error: 'Missing username or password' })
     } else if (password.length < 3) {
         return response
             .status(400)
             .json({ error: 'Password must be at least 3 characters long' })
+    } else if (username.length < 3) {
+        return response
+            .status(400)
+            .json({ error: 'Username must be at least 3 characters long' })
     } else {
         const existingUser = await User.findOne({ username })
         if (existingUser) {
@@ -35,8 +39,9 @@ userRouter.post('/', async (request, response) => {
     }
 })
 
+// Get all the users
 userRouter.get('/', async (request, response) => {
-    const users = await User.find({})
+    const users = await User.find({}).populate('blogs', { title: 1, author: 1 })
     response.json(users.map((u) => u.toJSON()))
 })
 

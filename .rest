@@ -5,7 +5,8 @@ Content-Type: application/json
   "title": "String",
   "author": "Author",
   "url": "www.String.com",
-  "likes": 12345
+  "likes": 12345,
+  "userID": "62cd45044302450a6e4879b5"
 }
 
 ###
