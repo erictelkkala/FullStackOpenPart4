@@ -8,6 +8,7 @@ const config = require('./utils/config')
 const blogRouter = require('./controllers/blogRouter')
 const userRouter = require('./controllers/userRouter')
 const loginRouter = require('./controllers/login')
+const tokenExtractor = require('./utils/tokenExtractor')
 
 const mongodbURI = config.MONGODB_URI
 mongoose
@@ -43,12 +44,13 @@ const errorHandler = (error, request, response, next) => {
     next(error)
 }
 
-app.use(cors())
 app.use(express.json())
+app.use('api/blogs', tokenExtractor)
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
 app.use(unknownEndpoint)
 app.use(errorHandler)
+app.use(cors())
 
 module.exports = app
