@@ -17,10 +17,11 @@ blogRouter.get('/', async (request, response) => {
 blogRouter.post('/', async (request, response) => {
     const blog = request.body
     // console.log('Token:' + request.token)
+    // console.log('Blog:' + blog)
 
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
     if (!decodedToken.id) {
-        return response.status(401).json({ error: 'token missing or invalid' })
+        return response.status(401).json({ error: 'Token missing or invalid' })
     }
 
     // Get the user from the database using the id of the token holder
@@ -54,11 +55,38 @@ blogRouter.post('/', async (request, response) => {
 
 // Delete a blog from the database
 blogRouter.delete('/:id', async (request, response) => {
-    const result = await Blog.findByIdAndDelete(request.params.id)
-    if (result) {
-        response.status(204).end()
+    // Check if the token is valid
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
+        return response.status(401).json({ error: 'Token missing or invalid' })
+    }
+
+    // Get the user from the database using the id of the token holder
+    const user = await User.findById(decodedToken.id)
+    if (user) {
+        // Get the blog from the database using the id in the url
+        const blog = await Blog.findById(request.params.id)
+        if (blog) {
+            // Check if the blog belongs to the user
+            if (blog.user.toString() !== user.id.toString()) {
+                return response.status(401).json({ error: 'Unauthorized' })
+            }
+            // Delete the blog
+            await Blog.findByIdAndRemove(request.params.id)
+            // Remove the blog from the user's blogs array
+            user.blogs = user.blogs.filter(
+                (blog) => blog.toString() !== request.params.id.toString()
+            )
+            // Save the user
+            await user.save()
+            response.status(204).end()
+            // If the blog does not exist, return a 404 error
+        } else {
+            response.status(404).end()
+        }
+        // If the user does not exist, return a 404 error
     } else {
-        response.status(404).end()
+        response.status(404).json({ error: 'User not found' })
     }
 })
 

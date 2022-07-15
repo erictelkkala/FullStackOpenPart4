@@ -45,7 +45,7 @@ const errorHandler = (error, request, response, next) => {
 }
 
 app.use(express.json())
-app.use('api/blogs', tokenExtractor)
+app.use('/api/blogs', tokenExtractor)
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)

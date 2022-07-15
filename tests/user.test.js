@@ -82,7 +82,68 @@ describe('when there is initially one user in db', () => {
         expect(usersAtEnd).toHaveLength(usersAtStart.length)
     })
 
-    afterAll(() => {
-        mongoose.connection.close()
+    test('User can log in', async () => {
+        const usersAtStart = await helper.usersInDb()
+        const newUser = {
+            username: 'mluukkai',
+            name: 'Matti Luukkainen',
+            password: 'salainen',
+        }
+
+        // Create a new user
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        // Check that the user is added to the database
+        const usersAtEnd = await helper.usersInDb()
+        expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+
+        const loginDetails = {
+            username: 'mluukkai',
+            password: 'salainen',
+        }
+
+        // Check that the user can log in
+        await api.post('/api/login').send(loginDetails).expect(200)
+    })
+
+    test('user root exists in the database', async () => {
+        const usersInDb = await helper.usersInDb()
+        const usernames = usersInDb.map((u) => u.username)
+        expect(usernames).toContain('root')
+    })
+
+    test('Blogs have references to a user when created', async () => {
+        // Login to get the auth token
+        const loginDetails = {
+            username: 'root',
+            password: 'secret',
+        }
+
+        // Login to get the auth token
+        const response = await api.post('/api/login').send(loginDetails)
+        const authToken = response.body.token
+        // console.log(`Bearer ${authToken}`)
+
+        const newBlog = {
+            title: 'Test blog',
+            author: 'Test author',
+            url: 'http://www.test.com',
+            likes: 5,
+        }
+
+        await api
+            .post('/api/blogs')
+            .auth(authToken, { type: 'bearer' })
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+    })
+
+    afterAll(async () => {
+        await mongoose.connection.close()
     })
 })

@@ -6,7 +6,7 @@
     "scripts": {
         "start": "cross-env NODE_ENV=production node index.js",
         "dev": "cross-env NODE_ENV=development nodemon index.js",
-        "test": "cross-env NODE_ENV=test jest --verbose --runInBand"
+        "test": "cross-env NODE_ENV=test jest --runInBand"
     },
     "repository": {
         "type": "git",
@@ -35,8 +35,5 @@
         "nodemon": "^2.0.16",
         "prettier": "2.6.2",
         "supertest": "^6.2.4"
-    },
-    "jest": {
-        "testEnvironment": "node"
     }
 }

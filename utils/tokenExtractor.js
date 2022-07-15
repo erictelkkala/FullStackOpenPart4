@@ -1,6 +1,5 @@
 const tokenExtractor = (request, response, next) => {
     const authorization = request.get('authorization')
-    // console.log(authorization)
     if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
         // Send the token as a header named token
         request.token = authorization.substring(7)
