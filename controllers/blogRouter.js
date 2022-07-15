@@ -1,6 +1,7 @@
 const Blog = require('../models/blogSchema')
 const blogRouter = require('express').Router()
 const User = require('../models/userSchema')
+const jwt = require('jsonwebtoken')
 
 // Get every blog from the database
 blogRouter.get('/', async (request, response) => {
@@ -12,13 +13,29 @@ blogRouter.get('/', async (request, response) => {
     }
 })
 
+const getTokenFrom = (request) => {
+    const authorization = request.get('authorization')
+    if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+        return authorization.substring(7)
+    }
+    return null
+}
+
 // Add a new blog to the database
 blogRouter.post('/', async (request, response) => {
     const blog = request.body
-    console.log(blog.userID)
+    // console.log(blog.userID)
 
-    const user = await User.findById(blog.userID)
-    console.log(user)
+    // Get the authorization token from the header
+    const token = getTokenFrom(request)
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+    if (!token || !decodedToken.id) {
+        return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    // Get the user from the database using the id of the token holder
+    const user = await User.findById(decodedToken.id)
+    // console.log(user)
     // If the likes property is not defined, set it to 0
     if (blog.likes === undefined) {
         blog.likes = 0
