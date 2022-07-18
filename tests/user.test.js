@@ -143,6 +143,98 @@ describe('when there is initially one user in db', () => {
             .expect('Content-Type', /application\/json/)
     })
 
+    test('A blog can be deleted only with a token', async () => {
+        // Login to get the auth token
+        const loginDetails = {
+            username: 'root',
+            password: 'secret',
+        }
+
+        // Login to get the auth token
+        const response = await api.post('/api/login').send(loginDetails)
+        const authToken = response.body.token
+
+        const newBlog = {
+            title: 'Test blog',
+            author: 'Test author',
+            url: 'http://www.test.com',
+            likes: 5,
+        }
+
+        await api
+            .post('/api/blogs')
+            .auth(authToken, { type: 'bearer' })
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const blogsInDb = await helper.blogsInDb()
+        // Delete the last blog
+        const blogToDelete = blogsInDb[blogsInDb.length - 1]
+        // console.log(blogToDelete)
+
+        // Expect that you cannot delete a blog without a token
+        await api.delete(`/api/blogs/${blogToDelete._id}`).expect(401)
+
+        // Expect that you can only delete a blog with a correct token
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .auth(authToken, { type: 'bearer' })
+            .expect(204)
+    })
+
+    test('A blog can only be deleted by its creator', async () => {
+        // Login to get the auth token
+        const loginDetails = {
+            username: 'root',
+            password: 'secret',
+        }
+
+        // Login to get the auth token
+        const response = await api.post('/api/login').send(loginDetails)
+        const authToken = response.body.token
+
+        const newBlog = {
+            title: 'Test blog',
+            author: 'Test author',
+            url: 'http://www.test.com',
+            likes: 5,
+        }
+
+        await api
+            .post('/api/blogs')
+            .auth(authToken, { type: 'bearer' })
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const blogsInDb = await helper.blogsInDb()
+        // Delete the last blog
+        const blogToDelete = blogsInDb[blogsInDb.length - 1]
+
+        // Login with another user
+        const loginDetails2 = {
+            username: 'mluukkai',
+            password: 'salainen',
+        }
+
+        // Login to get the auth token
+        const response2 = await api.post('/api/login').send(loginDetails2)
+        const authToken2 = response2.body.token
+
+        // Expect that you cannot delete a blog with another user
+        await api
+            .delete(`/api/blogs/${blogToDelete._id}`)
+            .auth(authToken2, { type: 'bearer' })
+            .expect(401)
+
+        // Expect that you can only delete a blog with a correct token
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .auth(authToken, { type: 'bearer' })
+            .expect(204)
+    })
+
     afterAll(async () => {
         await mongoose.connection.close()
     })
