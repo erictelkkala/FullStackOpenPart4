@@ -177,6 +177,33 @@ describe('when there is initially one user in db', () => {
         expect(user.blogs).toHaveLength(1)
     })
 
+    test('Blog can only be added with a token', async () => {
+        const loginDetails = {
+            username: 'root',
+            password: 'secret',
+        }
+
+        const response = await api.post('/api/login').send(loginDetails)
+        const authToken = response.body.token
+
+        const newBlog = {
+            title: 'Test blog',
+            author: 'Test author',
+            url: 'http://www.test.com',
+            likes: 5,
+        }
+
+        // Expect that the blog cannot be added without a token
+        await api.post('/api/blogs').send(newBlog).expect(401)
+
+        // Expect that the blog can be added with a token
+        await api
+            .post('/api/blogs')
+            .auth(authToken, { type: 'bearer' })
+            .send(newBlog)
+            .expect(201)
+    })
+
     test('A blog can be deleted only with a token', async () => {
         // Login to get the auth token
         const loginDetails = {
