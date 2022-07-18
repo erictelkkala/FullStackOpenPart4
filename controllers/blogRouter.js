@@ -1,6 +1,5 @@
 const Blog = require('../models/blogSchema')
 const blogRouter = require('express').Router()
-const User = require('../models/userSchema')
 const jwt = require('jsonwebtoken')
 
 // Get every blog from the database
@@ -25,8 +24,7 @@ blogRouter.post('/', async (request, response) => {
     }
 
     // Get the user from the database using the id of the token holder
-    const user = await User.findById(decodedToken.id)
-    // console.log(user)
+    const user = request.user
     // If the likes property is not defined, set it to 0
     if (blog.likes === undefined) {
         blog.likes = 0
@@ -62,7 +60,7 @@ blogRouter.delete('/:id', async (request, response) => {
     }
 
     // Get the user from the database using the id of the token holder
-    const user = await User.findById(decodedToken.id)
+    const user = request.user
     if (user) {
         // Get the blog from the database using the id in the url
         const blog = await Blog.findById(request.params.id)

@@ -4,9 +4,15 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const User = require('../models/userSchema')
+const Blog = require('../models/blogSchema')
 const helper = require('../utils/user_helpers')
 
 describe('when there is initially one user in db', () => {
+    // Delete all the blogs from the database
+    beforeAll(async () => {
+        await Blog.deleteMany({})
+    })
+
     beforeEach(async () => {
         await User.deleteMany({})
 
@@ -126,7 +132,6 @@ describe('when there is initially one user in db', () => {
         // Login to get the auth token
         const response = await api.post('/api/login').send(loginDetails)
         const authToken = response.body.token
-        // console.log(`Bearer ${authToken}`)
 
         const newBlog = {
             title: 'Test blog',
@@ -141,6 +146,35 @@ describe('when there is initially one user in db', () => {
             .send(newBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
+    })
+
+    test('Users have a reference to their blogs', async () => {
+        // Login to get the auth token
+        const loginDetails = {
+            username: 'root',
+            password: 'secret',
+        }
+
+        const response = await api.post('/api/login').send(loginDetails)
+        const authToken = response.body.token
+
+        const newBlog = {
+            title: 'Test blog',
+            author: 'Test author',
+            url: 'http://www.test.com',
+            likes: 5,
+        }
+
+        await api
+            .post('/api/blogs')
+            .auth(authToken, { type: 'bearer' })
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const usersInDb = await helper.usersInDb()
+        const user = usersInDb.find((u) => u.username === 'root')
+        expect(user.blogs).toHaveLength(1)
     })
 
     test('A blog can be deleted only with a token', async () => {
@@ -211,7 +245,6 @@ describe('when there is initially one user in db', () => {
         const blogsInDb = await helper.blogsInDb()
         // Delete the last blog
         const blogToDelete = blogsInDb[blogsInDb.length - 1]
-
         // Login with another user
         const loginDetails2 = {
             username: 'mluukkai',
