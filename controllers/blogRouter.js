@@ -1,7 +1,7 @@
 const Blog = require('../models/blogSchema')
 const blogRouter = require('express').Router()
 const jwt = require('jsonwebtoken')
-const { tokenExtractor, userExtractor } = require('./utils/middleware')
+const { tokenExtractor, userExtractor } = require('../utils/middleware')
 
 // Get every blog from the database
 blogRouter.get('/', async (request, response) => {
