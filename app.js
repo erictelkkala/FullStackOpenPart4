@@ -8,6 +8,7 @@ const config = require('./utils/config')
 const blogRouter = require('./controllers/blogRouter')
 const userRouter = require('./controllers/userRouter')
 const loginRouter = require('./controllers/login')
+const testingRouter = require('./controllers/testingRouter')
 
 const mongodbURI = config.MONGODB_URI
 mongoose
@@ -47,6 +48,10 @@ app.use(express.json())
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
+// Router for the test environment
+if (process.env.NODE_ENV === 'test') {
+    app.use('/api/testing', testingRouter)
+}
 app.use(unknownEndpoint)
 app.use(errorHandler)
 app.use(cors())
